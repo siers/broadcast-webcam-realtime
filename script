@@ -1,61 +1,20 @@
 #! /usr/bin/env sh
 
-# none of these work on android, but hls.js itself works with their stream
-
-# ffmpeg -hide_banner -loglevel error -f v4l2 -s 320x240 -i /dev/video0 -async 1 -fflags +genpts -vcodec mpeg4 -f rtp rtp://127.0.0.1:23000
-
-    # -f v4l2 -s 320x240 -i /dev/video0 \
-    # -f v4l2 -s 320x240 -i /dev/video0 \
-
-    # deprecated
-    # -hls_wrap 40 \
-
-# works
-# ffmpeg -hide_banner -v verbose \
-#     -i out.mp4 \
-#     -s:v:0 320x240 -c:a:0 aac -b:a 192k -c:v:0 libx265 -b:v:0 4000k \
-#     -f hls \
-#     -hls_flags single_file \
-#     -hls_segment_type mpegts \
-#     -hls_list_size 0 \
-#     -hls_time 2 \
-#     -hls_allow_cache 1 \
-#     ./stream.m3u8
-
-    # -hls_time 6 \
-    # -hls_list_size 40 -hls_flags delete_segment \
-    # -hls_delete_threshold 1 \
-    # -hls_flags delete_segments \
-    # -hls_start_number_source datetime \
-    #
-
-# https://trac.ffmpeg.org/ticket/8904
-
-# works
-# ffmpeg \
-#   -i out.mp4 \
-#   -f hls \
-#   -movflags frag_keyframe \
-#   -hls_flags single_file \
-#   -hls_segment_type mpegts \
-#   -hls_list_size 0 \
-#   -hls_time 2 \
-#   -hls_allow_cache 1 \
-#   ./stream.m3u8
-
-rm -r video
-mkdir -p video
-
-# # works
-# ffmpeg -i out.mp4 -vcodec libx264 \
-#   -map 0:v:0 \
-#   -c:v libx264 \
-#   -filter:v:0 scale=w=480:h=360  -maxrate:v:0 600k \
-#   -var_stream_map "v:0,name:360p" \
-#   -preset fast -hls_list_size 10 -threads 0 -f hls \
-#   -hls_time 1 -hls_flags independent_segments \
-#   video/stream.m3u8
-
-# ffmpeg -i out.mp4 -codec:v libx264 -r 25 -pix_fmt yuv420p -profile:v baseline -level 3 -b:v 500k -s 640x480 -codec:a aac -strict experimental -ac 2 -b:a 128k -movflags faststart -flags -global_header -map 0 -f hls  -hls_time 10 -hls_list_size 5 -hls_allow_cache 0 -sc_threshold 0 -hls_flags delete_segments video/stream.m3u8
-
-ffmpeg -i out.mp4 -codec:v libx264 -r 25 -pix_fmt yuv420p -profile:v baseline -level 3 -b:v 500k -s 640x480 -codec:a aac -strict experimental -ac 2 -b:a 128k -movflags faststart -flags -global_header -map 0 -f hls  -hls_time 10 -hls_list_size 5 -hls_allow_cache 0 -sc_threshold 0 -hls_flags delete_segments video/stream.m3u8
+ffmpeg \
+  -f alsa -ac 1 -i default -acodec aac \
+  -i /dev/video0 \
+  -codec:v libx264 \
+  -pix_fmt yuv420p \
+  -profile:v baseline \
+  -b:v 500k \
+  -s 640x480 \
+  -f alsa \
+  -codec:a aac \
+  -strict experimental \
+  -ac 2 \
+  -b:a 128k \
+  -movflags faststart \
+  -map 0 \
+  -threads 2 \
+  -filter_complex "drawtext=fontfile=FreeSerif.ttf:fontcolor=white:x=10:y=(h-10-text_h):text='%{localtime\:%F %T}:fontsize=14'" \
+  -f flv rtmp://192.168.1.133:1935/live/webcam

@@ -16,11 +16,11 @@
 </head>
 <body>
     <center>
-      <h1>Hls.js demo - basic usage</h1>
+      <h1>hls.js demo - basic usage</h1>
       <video height="600" id="video" controls></video>
     </center>
 
-    <a href="http://192.168.1.133:65353/video/stream.m3u8">video for vlc link</a>
+    <a id="link">video for vlc link</a>
 
     <script>
       var snoop = function(color) {
@@ -35,12 +35,21 @@
       console.error = snoop('red')
 
       var video = document.getElementById('video');
-      var stream = 'video/stream.m3u8'
+      var stream = 'http://raitis.veinbahs.lv:64550/hls/webcam.m3u8'
+      document.querySelector('#link').href = stream;
+      // var stream = 'video/stream.m3u8'
       // var stream = 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8'
 
       if (Hls.isSupported()) {
         var hls = new Hls({
           debug: true,
+          enableWorker: true,
+          maxBufferLength: 1,
+          liveBackBufferLength: 0,
+          liveSyncDuration: 0,
+          liveMaxLatencyDuration: 5,
+          liveDurationInfinity: true,
+          highBufferWatchdogPeriod: 1,
         });
         hls.loadSource(stream);
         hls.attachMedia(video);
